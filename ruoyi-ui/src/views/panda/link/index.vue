@@ -9,13 +9,15 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="logo" prop="logo">
-        <el-input
-          v-model="queryParams.logo"
-          placeholder="请输入logo"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="类型" prop="type">
+        <el-select v-model="queryParams.type" placeholder="请选择类型" clearable>
+          <el-option
+            v-for="dict in dict.type.panda_link_type"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="描述" prop="description">
         <el-input
@@ -24,6 +26,16 @@
           clearable
           @keyup.enter.native="handleQuery"
         />
+      </el-form-item>
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
+          <el-option
+            v-for="dict in dict.type.sys_normal_disable"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -80,11 +92,25 @@
     <el-table v-loading="loading" :data="linkList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="站点ID" align="center" prop="siteId" />
-      <el-table-column label="链接地址" align="center" prop="link" />
-      <el-table-column label="类型" align="center" prop="type" />
-      <el-table-column label="logo" align="center" prop="logo" />
+      <el-table-column label="链接地址" align="center" prop="link">
+      </el-table-column>
+      <el-table-column label="类型" align="center" prop="type">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.panda_link_type" :value="scope.row.type"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="logo" align="center" prop="logo" width="100">
+        <template slot-scope="scope">
+          <image-preview :src="scope.row.logo" :width="50" :height="50"/>
+        </template>
+      </el-table-column>
       <el-table-column label="描述" align="center" prop="description" />
       <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column label="状态" align="center" prop="status">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -101,6 +127,13 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['panda:link:remove']"
           >删除</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-location"
+            @click="goTarget(scope.row.link)"
+            v-hasPermi="['panda:link:remove']"
+          >跳转</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -114,19 +147,39 @@
     />
 
     <!-- 添加或修改网页链接对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="链接地址" prop="link">
           <el-input v-model="form.link" placeholder="请输入链接地址" />
         </el-form-item>
+        <el-form-item label="类型" prop="type">
+          <el-select v-model="form.type" placeholder="请选择类型">
+            <el-option
+              v-for="dict in dict.type.panda_link_type"
+              :key="dict.value"
+              :label="dict.label"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="logo" prop="logo">
-          <el-input v-model="form.logo" placeholder="请输入logo" />
+          <image-upload v-model="form.logo"/>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" placeholder="请输入描述" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" placeholder="请输入备注" />
+        <el-form-item label="备注">
+          <editor v-model="form.remark" :min-height="192"/>
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="请选择状态">
+            <el-option
+              v-for="dict in dict.type.sys_normal_disable"
+              :key="dict.value"
+              :label="dict.label"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -142,6 +195,7 @@ import { listLink, getLink, delLink, addLink, updateLink } from "@/api/panda/lin
 
 export default {
   name: "Link",
+  dicts: ['panda_link_type', 'sys_normal_disable'],
   data() {
     return {
       // 遮罩层
@@ -168,8 +222,8 @@ export default {
         pageSize: 10,
         link: null,
         type: null,
-        logo: null,
         description: null,
+        status: null,
       },
       // 表单参数
       form: {},
@@ -207,9 +261,10 @@ export default {
         type: null,
         logo: null,
         description: null,
+        remark: null,
+        status: null,
         createTime: null,
         updateTime: null,
-        remark: null,
         createBy: null,
         updateBy: null
       };
@@ -282,7 +337,11 @@ export default {
       this.download('panda/link/export', {
         ...this.queryParams
       }, `link_${new Date().getTime()}.xlsx`)
-    }
+    },
+    /** 外部链接跳转*/
+    goTarget(href) {
+      window.open(href, "_blank");
+    },
   }
 };
 </script>
