@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.panda.mapper.WebLinkMapper">
+    
+    <resultMap type="WebLink" id="WebLinkResult">
+        <result property="siteId"    column="site_id"    />
+        <result property="link"    column="link"    />
+        <result property="type"    column="type"    />
+        <result property="logo"    column="logo"    />
+        <result property="description"    column="description"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectWebLinkVo">
+        select site_id, link, type, logo, description, create_time, update_time, remark, create_by, update_by from web_link
+    </sql>
+
+    <select id="selectWebLinkList" parameterType="WebLink" resultMap="WebLinkResult">
+        <include refid="selectWebLinkVo"/>
+        <where>  
+            <if test="link != null  and link != ''"> and link = #{link}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="logo != null  and logo != ''"> and logo = #{logo}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+        </where>
+    </select>
+    
+    <select id="selectWebLinkBySiteId" parameterType="Long" resultMap="WebLinkResult">
+        <include refid="selectWebLinkVo"/>
+        where site_id = #{siteId}
+    </select>
+        
+    <insert id="insertWebLink" parameterType="WebLink" useGeneratedKeys="true" keyProperty="siteId">
+        insert into web_link
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="link != null and link != ''">link,</if>
+            <if test="type != null">type,</if>
+            <if test="logo != null">logo,</if>
+            <if test="description != null">description,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="updateBy != null">update_by,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="link != null and link != ''">#{link},</if>
+            <if test="type != null">#{type},</if>
+            <if test="logo != null">#{logo},</if>
+            <if test="description != null">#{description},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWebLink" parameterType="WebLink">
+        update web_link
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="link != null and link != ''">link = #{link},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="logo != null">logo = #{logo},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </trim>
+        where site_id = #{siteId}
+    </update>
+
+    <delete id="deleteWebLinkBySiteId" parameterType="Long">
+        delete from web_link where site_id = #{siteId}
+    </delete>
+
+    <delete id="deleteWebLinkBySiteIds" parameterType="String">
+        delete from web_link where site_id in 
+        <foreach item="siteId" collection="array" open="(" separator="," close=")">
+            #{siteId}
+        </foreach>
+    </delete>
+</mapper>
