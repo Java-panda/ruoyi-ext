@@ -81,7 +81,7 @@ export default {
     ::v-deep .el-scrollbar__bar.is-vertical {
       z-index: 10;
     }
-  
+
     ::v-deep .el-scrollbar__wrap {
       overflow-x: hidden;
     }

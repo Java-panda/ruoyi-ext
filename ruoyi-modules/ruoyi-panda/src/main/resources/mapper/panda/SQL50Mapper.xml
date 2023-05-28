@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.panda.mapper.SQL50Mapper">
+    
+    <resultMap type="Course" id="CourseResult">
+        <result property="courseId"    column="course_id"    />
+        <result property="courseName"    column="course_name"    />
+        <result property="teacherId"    column="teacher_id"    />
+    </resultMap>
+    <resultMap type="Student" id="StudentResult">
+        <result property="studentId"    column="student_id"    />
+        <result property="studentName"    column="student_name"    />
+        <result property="studentAge"    column="student_age"    />
+        <result property="gender"    column="gender"    />
+    </resultMap>
+    <resultMap type="Teacher" id="TeacherResult">
+        <result property="teacherId"    column="teacher_id"    />
+        <result property="teacherName"    column="teacher_name"    />
+    </resultMap>
+    <resultMap type="Score" id="ScoreResult">
+        <result property="studentId"    column="student_id"    />
+        <result property="courseId"    column="course_id"    />
+        <result property="score"    column="score"    />
+    </resultMap>
+
+    <sql id="selectCourseVo">
+        select course_id, course_name, teacher_id from course
+    </sql>
+
+    <!--    1.查询" 01 “课程比” 02 "课程成绩高的学生的信息及课程分数-->
+    <select id="sql01" resultType="map">
+        SELECT
+            s.student_id as studentId,
+            s.student_name as studentName,
+            s.student_age as studentAge,
+            s.gender as gender,
+            ss.score1 as score1,
+            ss.score2 as score2
+        FROM
+            student s
+                JOIN (
+                SELECT
+                    s1.student_id,
+                    s1.score score1,
+                    s2.score score2
+                FROM
+                    score s1
+                        LEFT JOIN score s2 ON s1.student_id = s2.student_id
+                WHERE
+                    s1.course_id = '1'
+                  AND s2.course_id = '2'
+                  AND s1.score > s2.score
+            ) ss ON s.student_id = ss.student_id;
+    </select>
+
+</mapper>
