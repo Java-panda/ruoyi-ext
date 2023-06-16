@@ -1,0 +1,23 @@
+## 禁止渲染块
+#[[${packageName}]]#
+
+package ${packageName}.controller;
+
+#foreach($user in $users)
+    #if($user.gender=='男人')
+        #set($man='男人')
+    #elseif($user.gender.indexOf("女人")>-1)
+        #set($man='女人')
+    #else
+        #set($man='未知')
+    #end
+    性别：${man}
+
+    姓名：${user.name}
+    年龄：${user.age}
+    ToString:${user.toString()}
+#end
+#stop
+        该内容不会被渲染
+
+

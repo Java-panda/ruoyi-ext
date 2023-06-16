@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.panda.mapper.ScoreMapper">
+    
+    <resultMap type="Score" id="ScoreResult">
+        <result property="studentId"    column="student_id"    />
+        <result property="courseId"    column="course_id"    />
+        <result property="score"    column="score"    />
+    </resultMap>
+
+    <sql id="selectScoreVo">
+        select student_id, course_id, score from score
+    </sql>
+
+    <select id="selectScoreList" parameterType="Score" resultMap="ScoreResult">
+        <include refid="selectScoreVo"/>
+        <where>  
+            <if test="studentId != null "> and student_id = #{studentId}</if>
+            <if test="courseId != null "> and course_id = #{courseId}</if>
+            <if test="score != null "> and score = #{score}</if>
+        </where>
+    </select>
+    
+    <select id="selectScoreByStudentId" parameterType="Long" resultMap="ScoreResult">
+        <include refid="selectScoreVo"/>
+        where student_id = #{studentId}
+    </select>
+        
+    <insert id="insertScore" parameterType="Score">
+        insert into score
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="studentId != null">student_id,</if>
+            <if test="courseId != null">course_id,</if>
+            <if test="score != null">score,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="studentId != null">#{studentId},</if>
+            <if test="courseId != null">#{courseId},</if>
+            <if test="score != null">#{score},</if>
+         </trim>
+    </insert>
+
+    <update id="updateScore" parameterType="Score">
+        update score
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="courseId != null">course_id = #{courseId},</if>
+            <if test="score != null">score = #{score},</if>
+        </trim>
+        where student_id = #{studentId}
+    </update>
+
+    <delete id="deleteScoreByStudentId" parameterType="Long">
+        delete from score where student_id = #{studentId}
+    </delete>
+
+    <delete id="deleteScoreByStudentIds" parameterType="String">
+        delete from score where student_id in 
+        <foreach item="studentId" collection="array" open="(" separator="," close=")">
+            #{studentId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.panda.mapper.MoneyNoteMapper">
+    
+    <resultMap type="MoneyNote" id="MoneyNoteResult">
+        <result property="id"    column="id"    />
+        <result property="amount"    column="amount"    />
+        <result property="category"    column="category"    />
+        <result property="custTime"    column="cust_time"    />
+        <result property="payType"    column="pay_type"    />
+        <result property="inOut"    column="in_out"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="params.createBy"    column="user_name"    />
+    </resultMap>
+
+    <resultMap id="MoneyNoteImageResult" type="MoneyNote" extends="MoneyNoteResult">
+        <collection property="imageList" notNullColumn="sub_id" javaType="java.util.List" resultMap="ImageResult" />
+    </resultMap>
+
+    <resultMap type="Image" id="ImageResult">
+        <result property="id"    column="sub_id"    />
+        <result property="parentType"    column="sub_parent_type"    />
+        <result property="parentId"    column="sub_parent_id"    />
+        <result property="imageUrl"    column="sub_image_url"    />
+    </resultMap>
+
+    <sql id="selectMoneyNoteVo">
+        select id, amount, category, cust_time, pay_type, in_out, remark, create_by, create_time, update_by, update_time from money_note
+    </sql>
+
+    <select id="getMoneyNoteStat" resultType="com.ruoyi.panda.vo.MoneyNoteStatVO">
+        SELECT
+            SUM( amount ) AS all_sum,
+            MAX( amount ) AS all_max,
+            MIN( amount ) AS all_min,
+            AVG( amount ) AS all_avg,
+            COUNT( amount ) AS all_count,
+            SUM( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) THEN amount ELSE 0 END ) AS year_sum,
+            MAX( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS year_max,
+            MIN( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS year_min,
+            AVG( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS year_avg,
+            COUNT( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS year_count,
+            SUM( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND MONTH ( cust_time ) = MONTH ( CURRENT_TIMESTAMP ) THEN amount ELSE 0 END ) AS month_sum,
+            MAX( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND MONTH ( cust_time ) = MONTH ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS month_max,
+            MIN( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND MONTH ( cust_time ) = MONTH ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS month_min,
+            AVG( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND MONTH ( cust_time ) = MONTH ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS month_avg,
+            COUNT( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND MONTH ( cust_time ) = MONTH ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS month_count,
+            SUM( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND WEEK ( cust_time ) = WEEK ( CURRENT_TIMESTAMP ) THEN amount ELSE 0 END ) AS week_sum,
+            MAX( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND WEEK ( cust_time ) = WEEK ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS week_max,
+            MIN( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND WEEK ( cust_time ) = WEEK ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS week_min,
+            AVG( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND WEEK ( cust_time ) = WEEK ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS week_avg,
+            COUNT( CASE WHEN YEAR ( cust_time ) = YEAR ( CURRENT_TIMESTAMP ) AND WEEK ( cust_time ) = WEEK ( CURRENT_TIMESTAMP ) THEN amount ELSE NULL END ) AS week_count,
+            SUM( CASE WHEN DATE( cust_time ) = CURRENT_DATE THEN amount ELSE 0 END ) AS day_sum,
+            IFNULL( MAX( CASE WHEN DATE( cust_time ) = CURRENT_DATE THEN amount ELSE NULL END ), 0 ) AS day_max,
+            IFNULL( MIN( CASE WHEN DATE( cust_time ) = CURRENT_DATE THEN amount ELSE NULL END ), 0 ) AS day_min,
+            IFNULL( AVG( CASE WHEN DATE( cust_time ) = CURRENT_DATE THEN amount ELSE NULL END ), 0 ) AS day_avg,
+            COUNT( CASE WHEN DATE( cust_time ) = CURRENT_DATE THEN amount ELSE NULL END ) AS day_count
+        FROM
+            money_note
+        WHERE
+            in_out =- 1;
+    </select>
+
+    <select id="selectMoneyNoteList" parameterType="MoneyNote" resultMap="MoneyNoteResult">
+        select m.id, m.amount, m.category, m.cust_time, m.pay_type, m.in_out, m.remark, m.create_by, m.create_time, m.update_by, m.update_time,s.user_name from money_note m left join sys_user s on m.create_by = s.user_id
+        <where>  
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="category != null "> and category = #{category}</if>
+            <if test="custTime != null "> and cust_time = #{custTime}</if>
+            <if test="params.startTime != null "> and cust_time >= #{params.startTime}</if>
+            <if test="params.endTime != null "> and cust_time &lt;= #{params.endTime}</if>
+            <if test="payType != null "> and pay_type = #{payType}</if>
+            <if test="inOut != null "> and in_out = #{inOut}</if>
+            <if test="remark != null  and remark != ''"> and remark like concat('%', #{remark}, '%')</if>
+        </where>
+        order by m.cust_time desc , m.id desc
+    </select>
+    
+    <select id="selectMoneyNoteById" parameterType="Long" resultMap="MoneyNoteImageResult">
+        select a.id, a.amount, a.category, a.cust_time, a.pay_type, a.in_out, a.remark, a.create_by, a.create_time, a.update_by, a.update_time,
+ b.id as sub_id, b.parent_type as sub_parent_type, b.parent_id as sub_parent_id, b.image_url as sub_image_url
+        from money_note a
+        left join image b on b.parent_id = a.id
+        where a.id = #{id}
+    </select>
+
+
+    <insert id="insertMoneyNote" parameterType="MoneyNote" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        insert into money_note
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="amount != null">amount,</if>
+            <if test="category != null">category,</if>
+            <if test="custTime != null">cust_time,</if>
+            <if test="payType != null">pay_type,</if>
+            <if test="inOut != null">in_out,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="category != null">#{category},</if>
+            <if test="custTime != null">#{custTime},</if>
+            <if test="payType != null">#{payType},</if>
+            <if test="inOut != null">#{inOut},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMoneyNote" parameterType="MoneyNote">
+        update money_note
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="custTime != null">cust_time = #{custTime},</if>
+            <if test="payType != null">pay_type = #{payType},</if>
+            <if test="inOut != null">in_out = #{inOut},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMoneyNoteById" parameterType="Long">
+        delete from money_note where id = #{id}
+    </delete>
+
+    <delete id="deleteMoneyNoteByIds" parameterType="String">
+        delete from money_note where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteImageByParentIds" parameterType="String">
+        delete from image where parent_id in 
+        <foreach item="parentId" collection="array" open="(" separator="," close=")">
+            #{parentId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteImageByParentId" parameterType="Long">
+        delete from image where parent_id = #{parentId}
+    </delete>
+
+    <insert id="batchImage">
+        insert into image( id, parent_type, parent_id, image_url) values
+		<foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.id}, #{item.parentType}, #{item.parentId}, #{item.imageUrl})
+        </foreach>
+    </insert>
+</mapper>

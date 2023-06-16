@@ -19,7 +19,7 @@
     >
       <i class="el-icon-plus"></i>
     </el-upload>
-    
+
     <!-- 上传提示 -->
     <div class="el-upload__tip" slot="tip" v-if="showTip">
       请上传
@@ -180,6 +180,7 @@ export default {
         this.uploadList = [];
         this.number = 0;
         this.$emit("input", this.listToString(this.fileList));
+        console.log(this.listToString(this.fileList));
         this.$modal.closeLoading();
       }
     },

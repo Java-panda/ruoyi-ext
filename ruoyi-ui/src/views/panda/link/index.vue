@@ -147,7 +147,7 @@
     />
 
     <!-- 添加或修改网页链接对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body :close-on-click-modal="false">
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="链接地址" prop="link">
           <el-input v-model="form.link" placeholder="请输入链接地址" />

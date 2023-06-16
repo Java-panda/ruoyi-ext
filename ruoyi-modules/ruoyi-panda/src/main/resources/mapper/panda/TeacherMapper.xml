@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.panda.mapper.TeacherMapper">
+    
+    <resultMap type="Teacher" id="TeacherResult">
+        <result property="teacherId"    column="teacher_id"    />
+        <result property="teacherName"    column="teacher_name"    />
+    </resultMap>
+
+    <sql id="selectTeacherVo">
+        select teacher_id, teacher_name from teacher
+    </sql>
+
+    <select id="selectTeacherList" parameterType="Teacher" resultMap="TeacherResult">
+        <include refid="selectTeacherVo"/>
+        <where>  
+            <if test="teacherId != null "> and teacher_id = #{teacherId}</if>
+            <if test="teacherName != null  and teacherName != ''"> and teacher_name like concat('%', #{teacherName}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectTeacherByTeacherId" parameterType="Long" resultMap="TeacherResult">
+        <include refid="selectTeacherVo"/>
+        where teacher_id = #{teacherId}
+    </select>
+        
+    <insert id="insertTeacher" parameterType="Teacher">
+        insert into teacher
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="teacherId != null">teacher_id,</if>
+            <if test="teacherName != null">teacher_name,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="teacherId != null">#{teacherId},</if>
+            <if test="teacherName != null">#{teacherName},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTeacher" parameterType="Teacher">
+        update teacher
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="teacherName != null">teacher_name = #{teacherName},</if>
+        </trim>
+        where teacher_id = #{teacherId}
+    </update>
+
+    <delete id="deleteTeacherByTeacherId" parameterType="Long">
+        delete from teacher where teacher_id = #{teacherId}
+    </delete>
+
+    <delete id="deleteTeacherByTeacherIds" parameterType="String">
+        delete from teacher where teacher_id in 
+        <foreach item="teacherId" collection="array" open="(" separator="," close=")">
+            #{teacherId}
+        </foreach>
+    </delete>
+</mapper>
